@@ -1,619 +1,1530 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNIX: Seguridad de Sistema Operativo</title>
+<title>UNIX: Seguridad de Sistema Operativo — Blog Universitario</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0e0d;
+    --green-bright: #00ff88;
+    --green-mid: #00c96a;
+    --green-dark: #006633;
+    --green-dim: #003d1f;
+    --surface: #0f1a14;
+    --surface2: #162010;
+    --surface3: #1c2a18;
+    --border: rgba(0, 255, 136, 0.15);
+    --border-strong: rgba(0, 255, 136, 0.35);
+    --text: #c8f0d8;
+    --text-dim: #6a9c7a;
+    --text-bright: #e8fff0;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --amber: #f0a500;
+    --red: #ff4444;
+    --blue: #4af;
+  }
+
   body {
-    font-family: Georgia, 'Times New Roman', serif;
-    color: #2c2c2c;
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--sans);
     line-height: 1.7;
-    font-size: 17px;
-    max-width: 760px;
+    font-size: 16px;
+  }
+
+  /* ── HEADER HERO ─────────────────────────────────── */
+  .hero {
+    position: relative;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-strong);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .hero-inner {
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 30px 20px 80px;
-    background: #ffffff;
+    padding: 80px 40px 60px;
+    position: relative;
+    z-index: 2;
   }
 
-  h1, h2, h3, h4 {
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    color: #1a1a1a;
-    line-height: 1.3;
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--green-bright);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  h1 {
-    font-size: 2rem;
-    border-bottom: 4px solid #2271b1;
-    padding-bottom: 14px;
-    margin-bottom: 6px;
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: var(--green-bright);
   }
 
-  .subtitle {
-    color: #666;
-    font-size: 1.05rem;
-    margin-bottom: 30px;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 700;
+    color: var(--green-bright);
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
   }
 
-  .meta {
-    font-size: 0.9rem;
-    color: #777;
+  .hero h1 span {
+    color: var(--text-bright);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 640px;
     margin-bottom: 40px;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    line-height: 1.6;
   }
 
-  hr.section-divider {
-    border: none;
-    border-top: 1px solid #e0e0e0;
-    margin: 60px 0 40px;
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
   }
 
-  h2.week {
-    font-size: 1.5rem;
-    color: #2271b1;
-    margin-top: 0;
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .hero-meta strong { color: var(--green-mid); }
+
+  .terminal-deco {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(0, 255, 136, 0.18);
+    line-height: 1.8;
+    text-align: right;
+    pointer-events: none;
+    white-space: pre;
   }
 
-  .week-meta {
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    font-size: 0.85rem;
+  /* ── NAV TABS ────────────────────────────────────── */
+  .nav-weeks {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+  }
+
+  .nav-tab {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 16px 20px;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
+  }
+
+  .nav-tab:hover { color: var(--green-mid); border-bottom-color: var(--green-dim); }
+  .nav-tab.active { color: var(--green-bright); border-bottom-color: var(--green-bright); }
+
+  /* ── MAIN LAYOUT ─────────────────────────────────── */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 60px;
+    align-items: start;
+  }
+
+  /* ── SECTIONS / WEEKS ───────────────────────────── */
+  .week-section {
+    margin-bottom: 100px;
+  }
+
+  .week-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--green-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .week-title {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--green-bright);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .week-subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-h2 {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green-mid);
+    margin: 40px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-h2::before {
+    content: '#';
+    color: var(--green-dim);
+  }
+
+  .section-h3 {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin: 28px 0 10px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #999;
-    margin-bottom: 4px;
   }
 
-  h3 {
-    font-size: 1.2rem;
-    margin-top: 36px;
-    margin-bottom: 10px;
-    border-left: 4px solid #2271b1;
-    padding-left: 12px;
+  p {
+    color: var(--text);
+    margin-bottom: 16px;
+    font-size: 15px;
   }
 
-  h4 {
-    font-size: 1rem;
-    margin-top: 24px;
-    margin-bottom: 8px;
-    color: #444;
-  }
-
-  p { margin-bottom: 16px; }
-
-  strong { color: #1a1a1a; }
-
-  code {
-    background: #f1f1f1;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-    color: #c7254e;
-  }
-
-  pre {
-    background: #1e1e1e;
-    color: #d4d4d4;
-    padding: 18px 20px;
+  /* ── CODE BLOCKS ─────────────────────────────────── */
+  .code-block {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green-bright);
     border-radius: 6px;
-    overflow-x: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-    line-height: 1.6;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--green-mid);
     margin: 20px 0;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
   }
 
-  pre code {
-    background: none;
-    color: inherit;
-    padding: 0;
+  .code-block .prompt { color: var(--green-bright); }
+  .code-block .comment { color: var(--text-dim); }
+  .code-block .output { color: var(--text); }
+
+  /* ── INFO BOXES ──────────────────────────────────── */
+  .info-box {
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 24px 0;
+    font-size: 14px;
   }
 
-  table {
+  .info-box.tip { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.04); }
+  .info-box.tip .info-title { color: var(--green-bright); }
+
+  .info-box.warn { border-color: rgba(240,165,0,0.3); background: rgba(240,165,0,0.04); }
+  .info-box.warn .info-title { color: var(--amber); }
+
+  .info-box.danger { border-color: rgba(255,68,68,0.3); background: rgba(255,68,68,0.04); }
+  .info-box.danger .info-title { color: var(--red); }
+
+  .info-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ── ARCH DIAGRAM ────────────────────────────────── */
+  .arch-diagram {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 28px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    overflow-x: auto;
+  }
+
+  .arch-diagram .layer {
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .layer-name { color: var(--green-bright); font-weight: 700; min-width: 110px; }
+  .layer-desc { color: var(--text-dim); font-size: 11px; }
+  .layer-tag {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  .l-user { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.2); }
+  .l-kernel { background: rgba(240,165,0,0.08); border-color: rgba(240,165,0,0.25); }
+  .l-kernel .layer-name { color: var(--amber); }
+  .l-kernel .layer-tag { background: rgba(240,165,0,0.12); color: var(--amber); border: 1px solid rgba(240,165,0,0.3); }
+  .l-hw { background: rgba(68,170,255,0.06); border-color: rgba(68,170,255,0.2); }
+  .l-hw .layer-name { color: var(--blue); }
+  .l-hw .layer-tag { background: rgba(68,170,255,0.1); color: var(--blue); border: 1px solid rgba(68,170,255,0.3); }
+  .l-user .layer-tag { background: rgba(0,255,136,0.1); color: var(--green-mid); border: 1px solid rgba(0,255,136,0.3); }
+
+  .arch-arrow {
+    text-align: center;
+    color: var(--green-dim);
+    font-size: 18px;
+    line-height: 1;
+    margin: 2px 0;
+  }
+
+  /* ── TABLE ───────────────────────────────────────── */
+  .data-table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 13px;
     margin: 24px 0;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    font-size: 0.9rem;
   }
 
-  th {
-    background: #2271b1;
-    color: #fff;
+  .data-table th {
+    background: var(--surface3);
+    color: var(--green-mid);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 14px;
     text-align: left;
-    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-strong);
   }
 
-  td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #e6e6e6;
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
   }
 
-  tr:nth-child(even) td { background: #f7f9fb; }
+  .data-table tr:hover td { background: rgba(0,255,136,0.03); }
 
   .badge {
     display: inline-block;
-    font-size: 0.75rem;
-    font-weight: bold;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
   }
 
-  .badge-crit { background: #fdecea; color: #c0392b; }
-  .badge-high { background: #fef5e7; color: #b9770e; }
-  .badge-med  { background: #eaf2f8; color: #2471a3; }
-  .badge-ok   { background: #eafaf1; color: #1e8449; }
+  .badge-crit { background: rgba(255,68,68,0.15); color: #ff7777; border: 1px solid rgba(255,68,68,0.3); }
+  .badge-high { background: rgba(240,165,0,0.15); color: var(--amber); border: 1px solid rgba(240,165,0,0.3); }
+  .badge-med  { background: rgba(68,170,255,0.12); color: #77ccff; border: 1px solid rgba(68,170,255,0.3); }
+  .badge-ok   { background: rgba(0,255,136,0.1); color: var(--green-mid); border: 1px solid rgba(0,255,136,0.3); }
 
-  blockquote.box {
-    border-left: 4px solid #2271b1;
-    background: #f0f6fb;
-    padding: 14px 18px;
-    margin: 20px 0;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    font-size: 0.95rem;
+  /* ── RISK MATRIX ─────────────────────────────────── */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 24px 0;
   }
 
-  blockquote.box.warn {
-    border-left-color: #e0a800;
-    background: #fff8e6;
+  .risk-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--surface3);
   }
 
-  blockquote.box.danger {
-    border-left-color: #c0392b;
-    background: #fdecea;
+  .risk-card h4 {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green-mid);
+    margin-bottom: 8px;
   }
 
-  blockquote.box strong.label {
-    display: block;
-    margin-bottom: 6px;
-    color: #1a1a1a;
+  .risk-card .risk-val {
+    font-size: 24px;
+    font-weight: 600;
+    font-family: var(--mono);
+    line-height: 1;
+    margin-bottom: 4px;
   }
 
-  ul, ol { margin: 0 0 16px 24px; padding: 0; }
-  li { margin-bottom: 6px; }
+  .risk-card p { font-size: 12px; color: var(--text-dim); margin: 0; }
 
-  ul.checklist { list-style: none; margin-left: 0; }
-  ul.checklist li {
+  /* ── HARDENING CHECKLIST ─────────────────────────── */
+  .checklist { list-style: none; margin: 16px 0; }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     padding: 8px 0;
-    border-bottom: 1px solid #eee;
-  }
-  ul.checklist li:before {
-    content: "✔ ";
-    color: #1e8449;
-    font-weight: bold;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
   }
 
-  .tags {
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    font-size: 0.85rem;
-    color: #2271b1;
-    margin: 16px 0 40px;
+  .checklist li:last-child { border: none; }
+
+  .check-icon {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green-bright);
+    padding-top: 2px;
+    flex-shrink: 0;
   }
 
-  .toc {
-    background: #f7f9fb;
-    border: 1px solid #e6e6e6;
-    border-radius: 6px;
-    padding: 18px 22px;
-    margin-bottom: 40px;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    font-size: 0.95rem;
+  .check-label { color: var(--text); }
+  .check-cmd {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green-mid);
+    background: var(--surface3);
+    padding: 1px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
   }
 
-  .toc h2 {
-    font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 10px;
-    border: none;
-    padding: 0;
+  /* ── SIDEBAR ─────────────────────────────────────── */
+  .sidebar { position: sticky; top: 80px; }
+
+  .sidebar-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
   }
 
-  .toc ul { margin-left: 18px; }
-  .toc a { color: #2271b1; text-decoration: none; }
-  .toc a:hover { text-decoration: underline; }
+  .sidebar-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--green-bright);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
 
-  footer.post-footer {
-    margin-top: 60px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
-    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    font-size: 0.85rem;
-    color: #888;
+  .toc-list { list-style: none; }
+
+  .toc-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .toc-list li:last-child { border: none; }
+
+  .toc-list a {
+    color: var(--text-dim);
+    text-decoration: none;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    transition: color .2s;
+  }
+
+  .toc-list a:hover { color: var(--green-mid); }
+  .toc-list .toc-num { font-family: var(--mono); font-size: 10px; color: var(--green-dim); }
+
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .references-list { list-style: none; }
+
+  .references-list li {
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+    font-family: var(--sans);
+  }
+
+  .references-list li:last-child { border: none; }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  .footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    padding: 40px;
     text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .footer strong { color: var(--green-mid); }
+
+  /* ── CVE CARD ────────────────────────────────────── */
+  .cve-card {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+    background: var(--surface3);
+    padding: 18px 20px;
+    margin: 20px 0;
+  }
+
+  .cve-id {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: #ff7777;
+    margin-bottom: 6px;
+  }
+
+  .cve-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 10px;
+  }
+
+  .cve-meta {
+    display: flex;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .cve-meta span strong { color: var(--amber); }
+  .cve-body { font-size: 13px; color: var(--text); }
+
+  /* ── MANUAL STEP ─────────────────────────────────── */
+  .manual-step {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green-bright);
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--green-dim);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-body { flex: 1; }
+  .step-title { font-weight: 600; color: var(--text-bright); font-size: 14px; margin-bottom: 6px; }
+  .step-desc { font-size: 13px; color: var(--text); margin: 0; }
+
+  /* ── FINAL SUMMARY ───────────────────────────────── */
+  .exec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .exec-card {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .exec-card-icon { font-size: 20px; margin-bottom: 10px; }
+  .exec-card h4 { font-family: var(--mono); font-size: 13px; color: var(--green-mid); margin-bottom: 8px; }
+  .exec-card p { font-size: 13px; color: var(--text); margin: 0; }
+
+  .best-practices-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 28px 0;
+  }
+
+  .bp-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: var(--surface3);
+  }
+
+  .bp-card h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--green-bright);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bp-list { list-style: none; }
+  .bp-list li { font-size: 12px; color: var(--text); padding: 4px 0; display: flex; gap: 6px; }
+  .bp-list li::before { content: '›'; color: var(--green-dim); flex-shrink: 0; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .best-practices-col { grid-template-columns: 1fr; }
+    .exec-grid { grid-template-columns: 1fr; }
+    .risk-grid { grid-template-columns: 1fr; }
+    .terminal-deco { display: none; }
+    .hero-inner { padding: 50px 24px 40px; }
+    .main { padding: 40px 24px; }
+    .nav-inner { padding: 0 16px; overflow-x: auto; }
   }
 </style>
 </head>
 <body>
 
-<h1>UNIX: Seguridad del Sistema Operativo</h1>
-<p class="subtitle">Proyecto mensual de investigación y análisis de seguridad sobre arquitectura, vulnerabilidades, hardening y buenas prácticas en sistemas UNIX/BSD.</p>
-<p class="meta">Sistema operativo: UNIX / BSD &nbsp;·&nbsp; 4 publicaciones &nbsp;·&nbsp; Tema: Seguridad de S.O. &nbsp;·&nbsp; 2026</p>
+<!-- HERO -->
+<header class="hero">
+  <div class="terminal-deco">$ uname -a
+Unix 4.4BSD-Lite2
+$ whoami
+root
+$ ls /etc/security
+audit   group   passwd
+$ chmod 750 /usr/sbin
+$ tail -f /var/log/auth.log
+...
+$ sudo lynis audit system
+[ DONE ]</div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Sistemas Operativos · Seguridad · 2026</div>
+    <h1>UNIX<span>: Seguridad del</span><br>Sistema Operativo</h1>
+    <p class="hero-sub">Proyecto mensual de investigación y análisis de seguridad sobre arquitectura, vulnerabilidades, hardening y buenas prácticas en sistemas UNIX/BSD.</p>
+    <div class="hero-meta">
+      <span>🖥 <strong>S.O.:</strong> UNIX / BSD</span>
+      <span>📅 <strong>Semanas:</strong> 4 publicaciones</span>
+      <span>🔒 <strong>Tema:</strong> Seguridad de S.O.</span>
+      <span>📝 <strong>Formato:</strong> WordPress Blog</span>
+    </div>
+  </div>
+</header>
 
-<div class="toc">
-  <h2>Contenido</h2>
-  <ul>
-    <li><a href="#semana1">Semana 1 — Fundamentos teóricos</a></li>
-    <li><a href="#semana2">Semana 2 — Vulnerabilidades y CVEs</a></li>
-    <li><a href="#semana3">Semana 3 — Hardening técnico</a></li>
-    <li><a href="#semana4">Semana 4 — Informe final</a></li>
-  </ul>
-</div>
+<!-- STICKY NAV -->
+<nav class="nav-weeks">
+  <div class="nav-inner">
+    <a href="#semana1" class="nav-tab active">Semana 1 — Fundamentos</a>
+    <a href="#semana2" class="nav-tab">Semana 2 — Vulnerabilidades</a>
+    <a href="#semana3" class="nav-tab">Semana 3 — Hardening</a>
+    <a href="#semana4" class="nav-tab">Semana 4 — Informe Final</a>
+  </div>
+</nav>
 
-<!-- ═══════════════ SEMANA 1 ═══════════════ -->
-<section id="semana1">
-  <p class="week-meta">Publicación #1 · Mín. 800 palabras</p>
-  <h2 class="week">Fundamentos Teóricos de Seguridad en UNIX</h2>
+<div class="main">
 
-  <p>UNIX es uno de los sistemas operativos con mayor influencia en la historia de la computación. Concebido en los laboratorios Bell de AT&amp;T a finales de los años 60, su diseño desde los cimientos priorizó la <strong>separación de privilegios</strong>, la <strong>modularidad</strong> y la <strong>filosofía de mínimo privilegio</strong>. Estos principios, que en su época eran innovadores, siguen siendo hoy las bases sobre las que se construye la seguridad de sistemas modernos como Linux, macOS, FreeBSD y Android.</p>
+<!-- ═══════════════════════════════════════════════════ CONTENT ═══ -->
+<article>
+
+<!-- ─────────────────────────── SEMANA 1 ─────────────────────────── -->
+<section class="week-section" id="semana1">
+  <div class="week-label">Publicación #1 · Mín. 800 palabras</div>
+  <div class="week-title">Fundamentos Teóricos de Seguridad en UNIX</div>
+  <div class="week-subtitle">Arquitectura · Permisos · Mecanismos nativos de protección</div>
+
+  <p>UNIX es uno de los sistemas operativos con mayor influencia en la historia de la computación. Concebido en los laboratorios Bell de AT&T a finales de los años 60, su diseño desde los cimientos priorizó la <strong>separación de privilegios</strong>, la <strong>modularidad</strong> y la <strong>filosofía de mínimo privilegio</strong>. Estos principios, que en su época eran innovadores, siguen siendo hoy las bases sobre las que se construye la seguridad de sistemas modernos como Linux, macOS, FreeBSD y Android.</p>
 
   <p>En esta primera publicación analizamos la arquitectura de seguridad del sistema UNIX, su modelo de permisos POSIX y los mecanismos nativos de protección que lo hacen uno de los sistemas más robustos del ecosistema tecnológico.</p>
 
-  <h3>Arquitectura de seguridad del sistema UNIX</h3>
+  <h2 class="section-h2">Arquitectura de seguridad del sistema UNIX</h2>
 
   <p>UNIX implementa una arquitectura en capas que separa el espacio de usuario (<em>userland</em>) del núcleo del sistema (<em>kernel space</em>). Esta separación es el pilar fundamental de su modelo de seguridad: ningún proceso de usuario puede acceder directamente al hardware o modificar estructuras críticas del sistema sin pasar por el kernel, quien actúa como árbitro de todas las operaciones privilegiadas.</p>
 
-  <p>De forma resumida, las capas son: <strong>aplicaciones</strong> (shell, compiladores, servicios) → <strong>bibliotecas</strong> (libc, OpenSSL) → <strong>kernel</strong> (procesos, memoria, red, seguridad) → <strong>módulos de seguridad</strong> (BSM, MAC) → <strong>hardware</strong>. Cada capa se comunica con la siguiente mediante llamadas al sistema (<em>syscalls</em>).</p>
+  <div class="arch-diagram">
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;letter-spacing:0.1em;">ARQUITECTURA EN CAPAS — SISTEMA UNIX</div>
 
-  <p>El kernel gestiona los <strong>anillos de protección</strong> del procesador: el ring 0 (modo kernel) tiene acceso total al hardware, mientras que los procesos de usuario corren en ring 3 con acceso restringido. Cada vez que una aplicación necesita realizar una operación privilegiada —como abrir un fichero, crear un socket de red o iniciar un nuevo proceso— debe invocar una syscall, y el kernel decide si otorga o deniega ese acceso basándose en las credenciales del proceso.</p>
+    <div class="layer l-user">
+      <span class="layer-name">Aplicaciones</span>
+      <span class="layer-desc">Shell, compiladores, servicios de red, utilidades</span>
+      <span class="layer-tag badge-ok">user space</span>
+    </div>
+    <div class="arch-arrow">↕ syscalls</div>
+    <div class="layer l-user">
+      <span class="layer-name">Bibliotecas</span>
+      <span class="layer-desc">libc, libpthread, OpenSSL — abstracción del kernel</span>
+      <span class="layer-tag badge-ok">user space</span>
+    </div>
+    <div class="arch-arrow">↕ syscalls</div>
+    <div class="layer l-kernel">
+      <span class="layer-name">Kernel UNIX</span>
+      <span class="layer-desc">Gestión de procesos, memoria virtual, VFS, red, seguridad</span>
+      <span class="layer-tag">kernel space</span>
+    </div>
+    <div class="arch-arrow">↕ drivers</div>
+    <div class="layer l-kernel">
+      <span class="layer-name">Módulos / BSM</span>
+      <span class="layer-desc">Basic Security Module · auditoría · MAC frameworks</span>
+      <span class="layer-tag">kernel ext.</span>
+    </div>
+    <div class="arch-arrow">↕ HAL</div>
+    <div class="layer l-hw">
+      <span class="layer-name">Hardware</span>
+      <span class="layer-desc">CPU (rings 0/3), RAM, almacenamiento, red</span>
+      <span class="layer-tag">firmware</span>
+    </div>
+  </div>
 
-  <h3>Modelo de permisos y control de acceso (POSIX)</h3>
+  <p>El kernel gestiona los <strong>anillos de protección</strong> del procesador: el ring 0 (modo kernel) tiene acceso total al hardware, mientras que los procesos de usuario corren en ring 3 con acceso restringido. Cada vez que una aplicación necesita realizar una operación privilegiada —como abrir un fichero, crear un socket de red o iniciar un nuevo proceso— debe invocar una <em>syscall</em> (llamada al sistema), y el kernel decide si otorga o deniega ese acceso basándose en las credenciales del proceso.</p>
 
-  <p>UNIX implementa el modelo DAC (Discretionary Access Control) a través del estándar POSIX. Cada objeto del sistema de ficheros tiene asociados tres conjuntos de permisos:</p>
+  <h2 class="section-h2">Modelo de permisos y control de acceso (POSIX)</h2>
 
-  <table>
-    <tr><th>Entidad</th><th>Descripción</th><th>Permisos</th><th>Ejemplo octal</th></tr>
-    <tr><td><code>owner</code></td><td>Propietario del fichero</td><td>r · w · x</td><td><span class="badge badge-ok">700</span></td></tr>
-    <tr><td><code>group</code></td><td>Grupo primario</td><td>r · w · x</td><td><span class="badge badge-high">750</span></td></tr>
-    <tr><td><code>others</code></td><td>Resto de usuarios</td><td>r · w · x</td><td><span class="badge badge-crit">777</span></td></tr>
+  <p>UNIX implementa el modelo DAC (<em>Discretionary Access Control</em>) a través del estándar POSIX. Cada objeto del sistema de ficheros —archivos, directorios, dispositivos— tiene asociados tres conjuntos de permisos para tres categorías de entidades:</p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Entidad</th>
+        <th>Descripción</th>
+        <th>Permisos posibles</th>
+        <th>Ejemplo octal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="font-family:var(--mono);color:var(--green-bright)">owner</span></td>
+        <td>Propietario del fichero</td>
+        <td>r · w · x</td>
+        <td><span class="badge badge-ok">700</span></td>
+      </tr>
+      <tr>
+        <td><span style="font-family:var(--mono);color:var(--amber)">group</span></td>
+        <td>Grupo primario</td>
+        <td>r · w · x</td>
+        <td><span class="badge badge-high">750</span></td>
+      </tr>
+      <tr>
+        <td><span style="font-family:var(--mono);color:var(--text-dim)">others</span></td>
+        <td>Resto de usuarios</td>
+        <td>r · w · x</td>
+        <td><span class="badge badge-crit">777</span></td>
+      </tr>
+    </tbody>
   </table>
 
   <p>Adicionalmente, existen bits especiales: <code>setuid</code> (ejecutar con privilegios del owner), <code>setgid</code> (ejecutar con privilegios del grupo) y <code>sticky bit</code> (proteger ficheros en directorios compartidos). El abuso de ficheros con setuid en root es una de las vulnerabilidades más explotadas históricamente en UNIX.</p>
 
-  <pre><code>$ ls -la /usr/bin/passwd
+  <div class="code-block"><span class="prompt">$</span> ls -la /usr/bin/passwd
 -rwsr-xr-x  1 root  wheel  68432  /usr/bin/passwd
-#              ↑ 's' = setuid activo: ejecuta como root
+<span class="comment">#              ↑ 's' = setuid activo: ejecuta como root</span>
 
-$ find / -perm -4000 -user root 2>/dev/null
-# Busca binarios con setuid de root (vectores de ataque)</code></pre>
+<span class="prompt">$</span> stat -f "%Sp %Su %Sg" /etc/shadow
+<span class="output">-r--------  root  wheel</span>
 
-  <h3>Mecanismos nativos de protección</h3>
+<span class="prompt">$</span> find / -perm -4000 -user root 2>/dev/null
+<span class="comment"># Busca binarios con setuid de root (vectores de ataque)</span></div>
 
-  <h4>sudo — Control de acceso granular</h4>
-  <p><code>sudo</code> permite a usuarios autorizados ejecutar comandos con los privilegios de otro usuario (generalmente root), sin conocer su contraseña. La configuración se centraliza en <code>/etc/sudoers</code>, donde se definen reglas granulares.</p>
+  <h2 class="section-h2">Mecanismos nativos de protección en UNIX/BSD</h2>
 
-  <h4>PAM — Pluggable Authentication Modules</h4>
-  <p>UNIX/BSD utilizan PAM para modularizar la autenticación, permitiendo combinar contraseñas, tokens OTP, llaves SSH o biometría sin modificar las aplicaciones.</p>
+  <div class="section-h3">sudo — Control de acceso granular</div>
+  <p><code>sudo</code> permite a usuarios autorizados ejecutar comandos con los privilegios de otro usuario (generalmente root), sin necesidad de conocer la contraseña de root. La configuración se centraliza en <code>/etc/sudoers</code>, donde se pueden definir reglas extremadamente granulares.</p>
 
-  <h4>ACL — Permisos extendidos</h4>
-  <p>Más allá de los permisos POSIX básicos, UNIX moderno soporta listas de control de acceso (ACL) que permiten otorgar permisos específicos a usuarios individuales, superando la limitación de owner/group/others.</p>
+  <div class="code-block"><span class="comment"># /etc/sudoers — Configuración de privilegios</span>
+<span class="output">Defaults  env_reset, timestamp_timeout=5
+Defaults  requiretty
+Defaults  logfile=/var/log/sudo.log
 
-  <pre><code>$ setfacl -m u:bob:r-- /data/proyecto.conf
-$ getfacl /data/proyecto.conf
+<span class="prompt">%wheel</span>  ALL=(ALL) NOPASSWD: /sbin/shutdown, /sbin/reboot
+alice    server01 = (www) NOPASSWD: /usr/bin/apachectl restart</span></div>
+
+  <div class="section-h3">PAM — Pluggable Authentication Modules</div>
+  <p>UNIX/BSD utilizan PAM para modularizar la autenticación. Este framework permite configurar distintos métodos de autenticación (contraseñas, tokens OTP, llaves SSH, biometría) sin modificar las aplicaciones. Los módulos se encadenan y pueden ser obligatorios, suficientes o simplemente informativos.</p>
+
+  <div class="section-h3">Permisos extendidos y ACL</div>
+  <p>Más allá de los permisos POSIX básicos, UNIX moderno soporta Access Control Lists (ACL) que permiten otorgar permisos específicos a usuarios individuales en cualquier fichero, superando la limitación de owner/group/others.</p>
+
+  <div class="code-block"><span class="prompt">$</span> setfacl -m u:bob:r-- /data/proyecto.conf
+<span class="prompt">$</span> getfacl /data/proyecto.conf
+<span class="output">file: proyecto.conf
+owner: alice
+group: devs
 user::rw-
 user:bob:r--
 group::r--
-other::---</code></pre>
+mask::r--
+other::---</span></div>
 
-  <h4>Mandatory Access Control — TrustedBSD</h4>
-  <p>FreeBSD y derivados implementan el MAC Framework (TrustedBSD), que añade una capa de control de acceso obligatorio sobre el modelo DAC, permitiendo políticas de clasificación de información directamente en el kernel.</p>
+  <div class="section-h3">Mandatory Access Control — TrustedBSD / MAC Framework</div>
+  <p>FreeBSD y derivados implementan el <strong>MAC Framework</strong> (originado en el proyecto TrustedBSD) que añade una capa de control de acceso obligatorio sobre el modelo DAC. Políticas como <code>mac_biba</code>, <code>mac_mls</code> y <code>mac_lomac</code> permiten implementar modelos militares de clasificación de información directamente en el kernel.</p>
 
-  <h3>Conceptos clave: sandboxing, cifrado y autenticación</h3>
+  <h2 class="section-h2">Conceptos clave: sandboxing, cifrado y autenticación</h2>
 
-  <p><strong>Sandboxing:</strong> a través de <code>chroot(2)</code>, <code>pledge(2)</code> (OpenBSD), <code>capsicum(4)</code> (FreeBSD) y <code>seccomp</code> (Linux), los procesos pueden confinarse en entornos restringidos.</p>
+  <p><strong>Sandboxing en UNIX:</strong> A través de <code>chroot(2)</code>, <code>pledge(2)</code> (OpenBSD), <code>capsicum(4)</code> (FreeBSD) y <code>seccomp</code> (Linux), los procesos pueden ser confinados en entornos restringidos que limitan qué syscalls pueden invocar y a qué recursos pueden acceder.</p>
 
-  <p><strong>Cifrado:</strong> UNIX ofrece cifrado a distintos niveles: disco completo con <code>geli</code> (FreeBSD) o LUKS (Linux), sistema de ficheros con ZFS encryption, y comunicaciones con OpenSSL/LibreSSL y OpenSSH.</p>
+  <p><strong>Cifrado:</strong> UNIX ofrece cifrado a distintos niveles: de disco completo con <code>geli</code> (FreeBSD) o <code>LUKS</code> (Linux), de sistema de ficheros con <code>ZFS encryption</code>, y de comunicaciones con OpenSSL/LibreSSL. La suite OpenSSH cifra todas las comunicaciones remotas usando criptografía de curva elíptica o RSA.</p>
 
-  <p><strong>Autenticación:</strong> el fichero <code>/etc/shadow</code> almacena contraseñas hasheadas (bcrypt, SHA-512 con salt). La autenticación multifactor se integra vía PAM.</p>
+  <p><strong>Autenticación:</strong> El fichero <code>/etc/shadow</code> almacena las contraseñas hasheadas usando algoritmos modernos (bcrypt, SHA-512 con salt). La autenticación multifactor se integra via PAM con módulos como <code>pam_google_authenticator</code> o <code>pam_duo</code>.</p>
 
-  <blockquote class="box">
-    <strong class="label">✓ Concepto clave</strong>
-    La filosofía UNIX de "todo es un fichero" hace que el modelo de permisos POSIX se aplique uniformemente a dispositivos, pipes, sockets y pseudo-terminales — no solo a ficheros convencionales.
-  </blockquote>
+  <div class="info-box tip">
+    <div class="info-title">✓ Concepto clave</div>
+    La filosofía UNIX de "todo es un fichero" hace que el modelo de permisos POSIX se aplique uniformemente a dispositivos, pipes, sockets y pseudo-terminales — no solo a ficheros convencionales. Esto simplifica el modelo de seguridad pero requiere especial atención en los permisos de <code>/dev/*</code>.
+  </div>
 
-  <h3>Conclusiones — Semana 1</h3>
-  <p>UNIX estableció hace más de cinco décadas un modelo de seguridad basado en la separación de privilegios y el mínimo acceso que sigue siendo válido hoy. La arquitectura en capas, los permisos POSIX y mecanismos como PAM, sudo y MAC Framework conforman un ecosistema maduro. En las próximas semanas analizaremos cómo, a pesar de esta solidez, vulnerabilidades históricas y configuraciones incorrectas han comprometido sistemas UNIX a lo largo del tiempo.</p>
+  <h2 class="section-h2">Conclusiones — Semana 1</h2>
+  <p>UNIX estableció hace más de cinco décadas un modelo de seguridad basado en la separación de privilegios y el mínimo acceso que sigue siendo válido y vigente. La arquitectura en capas, los permisos POSIX y mecanismos como PAM, sudo y MAC Framework conforman un ecosistema de seguridad maduro. En las próximas semanas analizaremos cómo a pesar de esta solidez, vulnerabilidades históricas y configuraciones incorrectas han comprometido sistemas UNIX a lo largo del tiempo.</p>
 
-  <p class="tags">#security #OS #UNIX #architecture #permissions #kernel</p>
+  <div class="info-box warn">
+    <div class="info-title">📌 Etiquetas WordPress</div>
+    <code>#security</code> · <code>#OS</code> · <code>#UNIX</code> · <code>#architecture</code> · <code>#permissions</code> · <code>#kernel</code>
+  </div>
 </section>
 
-<hr class="section-divider">
+<!-- ─────────────────────────── SEMANA 2 ─────────────────────────── -->
+<section class="week-section" id="semana2">
+  <div class="week-label">Publicación #2 · Mín. 1000 palabras</div>
+  <div class="week-title">Vulnerabilidades y Análisis de Riesgos en UNIX</div>
+  <div class="week-subtitle">CVEs · Cuadro de riesgos · Auditoría práctica</div>
 
-<!-- ═══════════════ SEMANA 2 ═══════════════ -->
-<section id="semana2">
-  <p class="week-meta">Publicación #2 · Mín. 1000 palabras</p>
-  <h2 class="week">Vulnerabilidades y Análisis de Riesgos en UNIX</h2>
+  <p>Ningún sistema operativo, por robusto que sea su diseño, es inmune a las vulnerabilidades. La historia de UNIX está marcada por fallos de seguridad que han tenido consecuencias globales: desde el primer gusano de Internet (<em>Morris Worm</em>, 1988) que explotó vulnerabilidades en <code>sendmail</code>, <code>fingerd</code> y <code>rsh</code> de UNIX BSD, hasta CVEs modernos que afectan al kernel Linux y sus derivados.</p>
 
-  <p>Ningún sistema operativo, por robusto que sea su diseño, es inmune a las vulnerabilidades. La historia de UNIX está marcada por fallos de seguridad que han tenido consecuencias globales: desde el primer gusano de Internet (Morris Worm, 1988), hasta CVEs modernos que afectan al kernel Linux y sus derivados.</p>
+  <p>En esta publicación realizamos un análisis de las vulnerabilidades más frecuentes en entornos UNIX, documentamos tres CVEs representativos, y construimos un cuadro de riesgos usando metodología básica de análisis.</p>
 
-  <p>En esta publicación analizamos las vulnerabilidades más frecuentes en entornos UNIX, documentamos tres CVEs representativos y construimos un cuadro de riesgos con metodología básica.</p>
+  <h2 class="section-h2">Vulnerabilidades frecuentes en UNIX</h2>
 
-  <h3>Vulnerabilidades frecuentes en UNIX</h3>
-
-  <table>
-    <tr><th>Categoría</th><th>Descripción</th><th>Vector</th><th>Severidad</th></tr>
-    <tr><td>Escalada de privilegios</td><td>Binarios setuid mal configurados</td><td>Local</td><td><span class="badge badge-crit">CRÍTICA</span></td></tr>
-    <tr><td>Buffer overflow</td><td>Desbordamientos en daemons de red</td><td>Red</td><td><span class="badge badge-crit">CRÍTICA</span></td></tr>
-    <tr><td>Race conditions</td><td>TOCTOU en ficheros con symlinks</td><td>Local</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>Permisos incorrectos</td><td>Ficheros world-writable, /tmp inseguro</td><td>Local</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>Servicios innecesarios</td><td>rlogin, rsh, telnet, rpcbind activos</td><td>Red</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>Credenciales débiles</td><td>Cuentas por defecto, texto plano</td><td>Red/Local</td><td><span class="badge badge-med">MEDIA</span></td></tr>
-    <tr><td>Kernel exploits</td><td>Vulnerabilidades en drivers/syscalls</td><td>Local</td><td><span class="badge badge-crit">CRÍTICA</span></td></tr>
+  <table class="data-table">
+    <thead>
+      <tr><th>Categoría</th><th>Descripción</th><th>Vector</th><th>Severidad</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Escalada de privilegios</td>
+        <td>Binarios setuid mal configurados o vulnerables</td>
+        <td>Local</td>
+        <td><span class="badge badge-crit">CRÍTICA</span></td>
+      </tr>
+      <tr>
+        <td>Buffer overflow</td>
+        <td>Desbordamientos en daemons de red (sshd, sendmail, named)</td>
+        <td>Red</td>
+        <td><span class="badge badge-crit">CRÍTICA</span></td>
+      </tr>
+      <tr>
+        <td>Race conditions</td>
+        <td>TOCTOU en operaciones de ficheros con symlinks</td>
+        <td>Local</td>
+        <td><span class="badge badge-high">ALTA</span></td>
+      </tr>
+      <tr>
+        <td>Permisos incorrectos</td>
+        <td>Ficheros world-writable, directorios /tmp inseguros</td>
+        <td>Local</td>
+        <td><span class="badge badge-high">ALTA</span></td>
+      </tr>
+      <tr>
+        <td>Servicios innecesarios</td>
+        <td>rlogin, rsh, telnet, rpcbind activos por defecto</td>
+        <td>Red</td>
+        <td><span class="badge badge-high">ALTA</span></td>
+      </tr>
+      <tr>
+        <td>Credenciales débiles</td>
+        <td>Cuentas por defecto, contraseñas en texto plano</td>
+        <td>Red/Local</td>
+        <td><span class="badge badge-med">MEDIA</span></td>
+      </tr>
+      <tr>
+        <td>Kernel exploits</td>
+        <td>Vulnerabilidades en drivers, syscalls, módulos</td>
+        <td>Local</td>
+        <td><span class="badge badge-crit">CRÍTICA</span></td>
+      </tr>
+    </tbody>
   </table>
 
-  <h3>Análisis de 3 CVEs relevantes</h3>
+  <h2 class="section-h2">Análisis de 3 CVEs relevantes en UNIX</h2>
 
-  <h4>CVE-1999-0024 — Morris Internet Worm (1988)</h4>
-  <p>El gusano Morris fue el primer malware autorreplicante de Internet. Explotó simultáneamente un buffer overflow en <code>fingerd</code>, una backdoor en <code>sendmail</code> y el comando <code>rsh</code> con confianza entre máquinas. Infectó cerca de 6,000 equipos en 72 horas (10% del Internet de la época) y motivó la creación del primer CERT.</p>
+  <div class="cve-card">
+    <div class="cve-id">CVE-1999-0024 — Morris Internet Worm (Precursor)</div>
+    <div class="cve-title">Explotación múltiple de daemons UNIX BSD 4.3</div>
+    <div class="cve-meta">
+      <span><strong>CVSS:</strong> N/A (pre-CVSS)</span>
+      <span><strong>Año:</strong> 1988</span>
+      <span><strong>Afectado:</strong> UNIX BSD 4.3, SunOS</span>
+      <span><strong>Vector:</strong> Red</span>
+    </div>
+    <div class="cve-body">
+      El gusano Morris fue el primer malware autorepicante de Internet. Explotó simultáneamente tres vulnerabilidades: un buffer overflow en el daemon <code>fingerd</code>, una backdoor en <code>sendmail</code> que permitía enviar comandos al debug mode, y el comando <code>rsh</code>/trusted hosts que permitía acceso sin contraseña entre máquinas. En 72 horas infectó aproximadamente 6,000 máquinas (10% del Internet de la época). La respuesta llevó a la creación del primer CERT (Carnegie Mellon, 1988). <em>Lección aplicada:</em> BSD eliminó el modo debug de sendmail, restricción de rsh, y se implementaron parches de validación de entrada en fingerd.
+    </div>
+  </div>
 
-  <h4>CVE-2014-6271 — Shellshock (2014)</h4>
-  <p>Bash ejecutaba código adicional definido en variables de entorno sin validación, permitiendo ejecución remota de código en entornos CGI/DHCP sin autenticación. CVSS v2: 10.0. Millones de servidores estuvieron expuestos antes del parche.</p>
+  <div class="cve-card">
+    <div class="cve-id">CVE-2014-6271 — Shellshock</div>
+    <div class="cve-title">Ejecución remota de código arbitrario en GNU Bash</div>
+    <div class="cve-meta">
+      <span><strong>CVSS v2:</strong> 10.0</span>
+      <span><strong>Año:</strong> 2014</span>
+      <span><strong>Afectado:</strong> Bash hasta 4.3, todos los UNIX/Linux/macOS</span>
+      <span><strong>Vector:</strong> AV:N/AC:L/Au:N/C:C/I:C/A:C</span>
+    </div>
+    <div class="cve-body">
+      Bash permite definir variables de entorno que contienen funciones. El parser de Bash ejecutaba código adicional después de la definición de una función en una variable de entorno, sin validación. En entornos CGI o DHCP donde variables de entorno son controladas por el atacante, esto permitía ejecución remota de código sin autenticación. Millones de servidores UNIX/Linux con CGI estuvieron expuestos durante horas antes de los parches. <em>Solución:</em> Parches en Bash 4.3 patch 25-27 que corrigen el parser. Mitigación: restringir el uso de Bash en CGI, implementar WAF.
+    </div>
+  </div>
 
-  <h4>CVE-2021-4034 — PwnKit (2021)</h4>
-  <p>Vulnerabilidad de corrupción de memoria en <code>pkexec</code> de Polkit, presente desde 2009. Al ser setuid-root, permitía a cualquier usuario local obtener privilegios de root de forma trivial. CVSS v3: 7.8.</p>
+  <div class="cve-card">
+    <div class="cve-id">CVE-2021-4034 — PwnKit</div>
+    <div class="cve-title">Escalada de privilegios local en Polkit pkexec</div>
+    <div class="cve-meta">
+      <span><strong>CVSS v3:</strong> 7.8</span>
+      <span><strong>Año:</strong> 2021</span>
+      <span><strong>Afectado:</strong> pkexec desde 2009, todas las distribuciones Linux/Unix</span>
+      <span><strong>Vector:</strong> AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H</span>
+    </div>
+    <div class="cve-body">
+      Una vulnerabilidad de corrupción de memoria (escritura fuera de límites) en <code>pkexec</code> de Polkit, presente desde 2009. El binario es setuid-root y procesa incorrectamente el array <code>argv[]</code> cuando se ejecuta sin argumentos, lo que permite a cualquier usuario local obtener privilegios de root. El exploit es trivial y se publicaron PoCs el mismo día de la divulgación. <em>Solución:</em> Actualizar polkit a versión 0.120-3 o superior. Mitigación temporal: quitar el bit setuid del binario <code>pkexec</code>.
+    </div>
+  </div>
 
-  <h3>Cuadro de análisis de riesgos</h3>
+  <h2 class="section-h2">Cuadro de análisis de riesgos</h2>
 
-  <p>Metodología: identificación de activos críticos → identificación de amenazas → probabilidad × impacto → priorización.</p>
+  <p>Metodología aplicada: identificación de activos críticos → identificación de amenazas → estimación de probabilidad × impacto → priorización.</p>
 
-  <table>
-    <tr><th>Activo</th><th>Amenaza</th><th>Probabilidad</th><th>Impacto</th><th>Riesgo</th><th>Mitigación</th></tr>
-    <tr><td><code>/etc/shadow</code></td><td>Acceso no autorizado</td><td>Media</td><td>Crítico</td><td><span class="badge badge-crit">ALTO</span></td><td>chmod 000, PAM, sudo audit</td></tr>
-    <tr><td>Binarios setuid</td><td>Escalada de privilegios</td><td>Media</td><td>Crítico</td><td><span class="badge badge-crit">ALTO</span></td><td>Auditar con find, eliminar innecesarios</td></tr>
-    <tr><td>Servicios de red</td><td>Explotación remota</td><td>Alta</td><td>Alto</td><td><span class="badge badge-crit">ALTO</span></td><td>Deshabilitar rsh/telnet, firewall</td></tr>
-    <tr><td>Kernel</td><td>Exploit local</td><td>Baja</td><td>Crítico</td><td><span class="badge badge-high">MEDIO</span></td><td>Parches frecuentes, ASLR, NX</td></tr>
-    <tr><td>Cuentas de usuario</td><td>Fuerza bruta SSH</td><td>Alta</td><td>Alto</td><td><span class="badge badge-high">ALTO</span></td><td>fail2ban, claves RSA, MFA</td></tr>
+  <div class="risk-grid">
+    <div class="risk-card">
+      <h4>Activos críticos</h4>
+      <div class="risk-val" style="color:var(--blue)">5</div>
+      <p>/etc/shadow · SSH keys · /etc/sudoers · kernel · spool de correo</p>
+    </div>
+    <div class="risk-card">
+      <h4>Amenazas identificadas</h4>
+      <div class="risk-val" style="color:var(--amber)">8</div>
+      <p>Escalada local · RCE remoto · MITM · fuerza bruta · exfiltración</p>
+    </div>
+    <div class="risk-card">
+      <h4>Riesgos críticos</h4>
+      <div class="risk-val" style="color:var(--red)">3</div>
+      <p>setuid abuse · unpatched kernel · open rsh/telnet services</p>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Activo</th><th>Amenaza</th><th>Probabilidad</th><th>Impacto</th><th>Riesgo</th><th>Mitigación</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>/etc/shadow</code></td>
+        <td>Acceso no autorizado</td>
+        <td>Media</td>
+        <td>Crítico</td>
+        <td><span class="badge badge-crit">ALTO</span></td>
+        <td>chmod 000, PAM, sudo audit</td>
+      </tr>
+      <tr>
+        <td>Binarios setuid</td>
+        <td>Escalada de privilegios</td>
+        <td>Media</td>
+        <td>Crítico</td>
+        <td><span class="badge badge-crit">ALTO</span></td>
+        <td>Auditar con find, eliminar innecesarios</td>
+      </tr>
+      <tr>
+        <td>Servicios de red</td>
+        <td>Explotación remota</td>
+        <td>Alta</td>
+        <td>Alto</td>
+        <td><span class="badge badge-crit">ALTO</span></td>
+        <td>Deshabilitar rsh/telnet, firewall</td>
+      </tr>
+      <tr>
+        <td>Kernel</td>
+        <td>Exploit local</td>
+        <td>Baja</td>
+        <td>Crítico</td>
+        <td><span class="badge badge-high">MEDIO</span></td>
+        <td>Parches frecuentes, ASLR, NX</td>
+      </tr>
+      <tr>
+        <td>Cuentas de usuario</td>
+        <td>Fuerza bruta SSH</td>
+        <td>Alta</td>
+        <td>Alto</td>
+        <td><span class="badge badge-high">ALTO</span></td>
+        <td>fail2ban, claves RSA, MFA</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h3>Auditoría práctica en UNIX/Linux</h3>
+  <h2 class="section-h2">Auditoría práctica en UNIX/Linux</h2>
 
-  <pre><code># Auditoría completa con Lynis
-$ sudo lynis audit system --verbose
-Hardening index: 62
+  <div class="code-block"><span class="comment"># 1. Análisis con Lynis — auditoría completa del sistema</span>
+<span class="prompt">$</span> sudo lynis audit system --verbose
+<span class="output">[ Lynis 3.0.9 ]
+[*] System tools set
+[*] Checking /etc/issue
+[+] Kernel: 5.15.0-122-generic
+[WARNING] Default umask in /etc/login.defs is too permissive
+[WARNING] Found one or more suid/sgid files
+[SUGGESTION] Consider using PAM to harden authentication
+Hardening index: 62 [############          ]</span>
 
-# Búsqueda de rootkits
-$ sudo rkhunter --check --sk
+<span class="comment"># 2. Búsqueda de rootkits con rkhunter</span>
+<span class="prompt">$</span> sudo rkhunter --check --sk
+<span class="output">Rootkit checks...
+/tmp                          [ No warning ]
+/dev                          [ No warning ]
+Known rootkits: Checked 481 rootkits — None found</span>
 
-# Ficheros setuid peligrosos
-$ find /usr /bin /sbin -perm /4000 -exec ls -la {} \;
+<span class="comment"># 3. Ficheros setuid peligrosos</span>
+<span class="prompt">$</span> find /usr /bin /sbin -perm /4000 -exec ls -la {} \;
+<span class="comment"># 4. Usuarios con UID 0 (root duplicado)</span>
+<span class="prompt">$</span> awk -F: '($3 == 0) {print}' /etc/passwd</div>
 
-# Usuarios con UID 0 (root duplicado)
-$ awk -F: '($3 == 0) {print}' /etc/passwd</code></pre>
+  <h2 class="section-h2">Conclusiones — Semana 2</h2>
+  <p>El análisis demuestra que las vulnerabilidades más críticas en UNIX no siempre provienen de fallos de diseño del sistema, sino de configuraciones incorrectas, software de terceros sin parchear y servicios heredados activos. Los CVEs documentados (Shellshock, PwnKit, Morris Worm) reflejan patrones recurrentes: validación insuficiente de entradas, errores de gestión de memoria en código privilegiado y abuso del modelo de confianza entre máquinas. La herramienta Lynis es el punto de partida ideal para cualquier auditoría.</p>
 
-  <h3>Conclusiones — Semana 2</h3>
-  <p>El análisis demuestra que las vulnerabilidades más críticas en UNIX no siempre provienen de fallos de diseño, sino de configuraciones incorrectas, software de terceros sin parchear y servicios heredados activos. Los CVEs documentados reflejan patrones recurrentes: validación insuficiente de entradas, errores de gestión de memoria y abuso del modelo de confianza entre máquinas.</p>
-
-  <p class="tags">#vulnerabilities #CVE #riskanalysis #UNIX #lynis #shellshock</p>
+  <div class="info-box warn">
+    <div class="info-title">📌 Etiquetas WordPress</div>
+    <code>#vulnerabilities</code> · <code>#CVE</code> · <code>#riskanalysis</code> · <code>#UNIX</code> · <code>#lynis</code> · <code>#shellshock</code>
+  </div>
 </section>
 
-<hr class="section-divider">
+<!-- ─────────────────────────── SEMANA 3 ─────────────────────────── -->
+<section class="week-section" id="semana3">
+  <div class="week-label">Publicación #3 · Mín. 1200 palabras + evidencias</div>
+  <div class="week-title">Hardening de UNIX: Manual Técnico de Bastionado</div>
+  <div class="week-subtitle">SSH · Firewall · Permisos · Cifrado · Actualizaciones · 2FA</div>
 
-<!-- ═══════════════ SEMANA 3 ═══════════════ -->
-<section id="semana3">
-  <p class="week-meta">Publicación #3 · Mín. 1200 palabras + evidencias</p>
-  <h2 class="week">Hardening de UNIX: Manual Técnico de Bastionado</h2>
+  <p>El <em>hardening</em> (bastionado) consiste en reducir la superficie de ataque de un sistema operativo eliminando servicios innecesarios, reforzando configuraciones por defecto, aplicando controles de acceso estrictos e implementando cifrado en todos los niveles posibles. En sistemas UNIX, el hardening es especialmente sistemático: la filosofía del sistema nos permite actuar capa por capa, desde el kernel hasta los servicios de aplicación.</p>
 
-  <p>El <em>hardening</em> consiste en reducir la superficie de ataque eliminando servicios innecesarios, reforzando configuraciones por defecto, aplicando controles de acceso estrictos e implementando cifrado en todos los niveles. Este manual documenta las prácticas más importantes con comandos reales.</p>
+  <p>Este manual documenta las prácticas de hardening más importantes para un sistema UNIX/BSD o Linux moderno, con comandos reales y resultados esperados.</p>
 
-  <h3>1. Configuración segura de SSH</h3>
-  <p>Una configuración incorrecta del daemon <code>sshd</code> es la puerta de entrada más frecuente en ataques a servidores. Lo prioritario: deshabilitar autenticación por contraseña y usar solo claves criptográficas.</p>
+  <h2 class="section-h2">1. Configuración segura de SSH</h2>
 
-  <pre><code># /etc/ssh/sshd_config
+  <p>OpenSSH es el método principal de acceso remoto en UNIX. Una configuración incorrecta del daemon <code>sshd</code> es la puerta de entrada más frecuente en ataques a servidores.</p>
+
+  <div class="manual-step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Deshabilitar autenticación por contraseña — usar solo claves</div>
+      <div class="step-desc">La autenticación por contraseña es vulnerable a fuerza bruta. Las claves criptográficas eliminan este vector.</div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="comment"># /etc/ssh/sshd_config — Configuración hardened</span>
+<span class="output">Protocol 2
 PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+PermitEmptyPasswords no
+X11Forwarding no
 MaxAuthTries 3
+LoginGraceTime 30
+ClientAliveInterval 300
+ClientAliveCountMax 2
 AllowUsers alice bob admin
+Banner /etc/ssh/banner.txt</span>
 
-$ ssh-keygen -t ed25519 -C "admin@servidor.unix"
-$ ssh-copy-id usuario@servidor
-$ sudo service sshd restart</code></pre>
+<span class="prompt">#</span> Generar clave Ed25519 (más segura que RSA-2048)
+<span class="prompt">$</span> ssh-keygen -t ed25519 -C "admin@servidor.unix" -f ~/.ssh/id_ed25519
+<span class="prompt">$</span> ssh-copy-id -i ~/.ssh/id_ed25519.pub usuario@servidor
 
-  <p>Complementar con <strong>fail2ban</strong> para bloquear ataques de fuerza bruta:</p>
+<span class="prompt">#</span> Reiniciar el daemon tras cambios
+<span class="prompt">$</span> sudo service sshd restart && sudo sshd -t
+<span class="output">sshd: no errors</span></div>
 
-  <pre><code>$ sudo apt install fail2ban -y
-# /etc/fail2ban/jail.local
-[sshd]
+  <div class="manual-step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Instalar y configurar fail2ban para bloquear ataques de fuerza bruta</div>
+      <div class="step-desc">fail2ban analiza los logs en tiempo real y bloquea IPs que generan demasiados intentos fallidos.</div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="prompt">$</span> sudo apt install fail2ban -y
+<span class="comment"># /etc/fail2ban/jail.local</span>
+<span class="output">[sshd]
 enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
 maxretry = 3
 bantime = 3600
+findtime = 600</span>
 
-$ sudo systemctl enable --now fail2ban</code></pre>
+<span class="prompt">$</span> sudo systemctl enable --now fail2ban
+<span class="prompt">$</span> sudo fail2ban-client status sshd
+<span class="output">|- Filter: Currently failed: 2 | Total failed: 47
+`- Actions: Currently banned: 1 | Total banned: 3</span></div>
 
-  <h3>2. Configuración del firewall</h3>
+  <h2 class="section-h2">2. Configuración del firewall (pf / ufw / ipfw)</h2>
 
-  <pre><code># UFW (Linux)
-$ sudo ufw default deny incoming
-$ sudo ufw allow 22/tcp
-$ sudo ufw allow 443/tcp
-$ sudo ufw deny 23/tcp
-$ sudo ufw enable
+  <div class="code-block"><span class="comment"># UFW — Uncomplicated Firewall (Linux/Ubuntu)</span>
+<span class="prompt">$</span> sudo ufw default deny incoming
+<span class="prompt">$</span> sudo ufw default allow outgoing
+<span class="prompt">$</span> sudo ufw allow 22/tcp comment 'SSH'
+<span class="prompt">$</span> sudo ufw allow 443/tcp comment 'HTTPS'
+<span class="prompt">$</span> sudo ufw deny 23/tcp comment 'Block Telnet'
+<span class="prompt">$</span> sudo ufw enable
+<span class="prompt">$</span> sudo ufw status verbose
+<span class="output">Status: active
+To           Action    From
+--           ------    ----
+22/tcp       ALLOW IN  Anywhere
+443/tcp      ALLOW IN  Anywhere
+23/tcp       DENY IN   Anywhere</span>
 
-# pf (BSD) — /etc/pf.conf
+<span class="comment"># BSD pf — /etc/pf.conf</span>
+<span class="output">set skip on lo0
 block in all
-pass in on em0 proto tcp to port { 22, 443 } keep state</code></pre>
+pass in on em0 proto tcp to port { 22, 443 } keep state
+pass out all keep state
+block in quick from &lt;bruteforce&gt; to any</span></div>
 
-  <h3>3. Gestión de usuarios y permisos</h3>
-  <p>Auditar cuentas sin contraseña, con UID 0 no esperados, y deshabilitar shells en cuentas de servicio:</p>
+  <h2 class="section-h2">3. Gestión de usuarios y permisos</h2>
 
-  <pre><code>$ grep -v '/nologin\|/false' /etc/passwd
-$ sudo awk -F: '($2 == "") {print $1}' /etc/shadow
-$ sudo usermod -s /usr/sbin/nologin daemon_account
-$ sudo chage -M 90 -m 7 -W 14 alice</code></pre>
+  <div class="manual-step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Auditar y limpiar cuentas del sistema</div>
+      <div class="step-desc">Identificar cuentas sin contraseña, con UID 0 no esperados, y shells activos en cuentas de servicio.</div>
+    </div>
+  </div>
 
-  <h3>4. Cifrado de disco y datos sensibles</h3>
+  <div class="code-block"><span class="comment"># Cuentas con shell interactivo (potencial riesgo)</span>
+<span class="prompt">$</span> grep -v '/nologin\|/false' /etc/passwd
 
-  <pre><code># LUKS (Linux)
-$ sudo cryptsetup luksFormat /dev/sdb1
-$ sudo cryptsetup luksOpen /dev/sdb1 datos_cifrados
-$ sudo mkfs.ext4 /dev/mapper/datos_cifrados
+<span class="comment"># Cuentas sin contraseña</span>
+<span class="prompt">$</span> sudo awk -F: '($2 == "") {print $1}' /etc/shadow
 
-# geli (FreeBSD)
-# geli init -s 4096 -l 256 /dev/ada0p3</code></pre>
+<span class="comment"># Deshabilitar cuenta de servicio (sin eliminar)</span>
+<span class="prompt">$</span> sudo usermod -s /usr/sbin/nologin daemon_account
 
-  <h3>5. Autenticación multifactor (2FA) con TOTP</h3>
+<span class="comment"># Establecer expiración de contraseñas</span>
+<span class="prompt">$</span> sudo chage -M 90 -m 7 -W 14 alice
+<span class="prompt">$</span> sudo chage -l alice
+<span class="output">Last password change: Jun 01, 2026
+Password expires: Aug 30, 2026
+Password inactive: never
+Account expires: never
+Minimum number of days between password change: 7
+Maximum number of days between password change: 90
+Number of days of warning before password expires: 14</span></div>
 
-  <pre><code>$ sudo apt install libpam-google-authenticator
-$ google-authenticator -t -d -f -r 3 -R 30 -w 3
+  <h2 class="section-h2">4. Cifrado de disco y datos sensibles</h2>
 
-# /etc/pam.d/sshd
-auth required pam_google_authenticator.so nullok</code></pre>
+  <div class="manual-step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Cifrado de partición con LUKS (Linux) / geli (FreeBSD)</div>
+      <div class="step-desc">El cifrado de disco completo protege datos en reposo contra acceso físico no autorizado.</div>
+    </div>
+  </div>
 
-  <h3>6. Hardening del kernel</h3>
+  <div class="code-block"><span class="comment"># LUKS — Cifrado de volumen en Linux</span>
+<span class="prompt">$</span> sudo cryptsetup luksFormat /dev/sdb1
+<span class="output">WARNING! This will overwrite data on /dev/sdb1.
+Are you sure? (Type 'yes' in capital letters): YES
+Enter passphrase for /dev/sdb1:</span>
 
-  <pre><code># /etc/sysctl.conf
+<span class="prompt">$</span> sudo cryptsetup luksOpen /dev/sdb1 datos_cifrados
+<span class="prompt">$</span> sudo mkfs.ext4 /dev/mapper/datos_cifrados
+<span class="prompt">$</span> sudo mount /dev/mapper/datos_cifrados /mnt/datos
+
+<span class="comment"># FreeBSD geli — cifrado AES-XTS 256 bits</span>
+<span class="prompt">#</span> geli init -s 4096 -l 256 /dev/ada0p3
+<span class="prompt">#</span> geli attach /dev/ada0p3
+<span class="prompt">#</span> newfs /dev/ada0p3.eli</div>
+
+  <h2 class="section-h2">5. Autenticación multifactor (2FA) con TOTP</h2>
+
+  <div class="code-block"><span class="comment"># Instalar Google Authenticator PAM</span>
+<span class="prompt">$</span> sudo apt install libpam-google-authenticator
+<span class="prompt">$</span> google-authenticator -t -d -f -r 3 -R 30 -w 3
+<span class="output">Your new secret key is: JBSWY3DPEHPK3PXP
+Your verification code is 455129
+Scan QR code with your authenticator app:
+[ QR CODE DISPLAYED ]</span>
+
+<span class="comment"># /etc/pam.d/sshd — Añadir 2FA</span>
+<span class="output">auth required pam_google_authenticator.so nullok
+@include common-auth</span>
+
+<span class="comment"># /etc/ssh/sshd_config</span>
+<span class="output">ChallengeResponseAuthentication yes
+AuthenticationMethods publickey,keyboard-interactive</span></div>
+
+  <h2 class="section-h2">6. Hardening del kernel</h2>
+
+  <div class="code-block"><span class="comment"># /etc/sysctl.conf — Parámetros de seguridad del kernel</span>
+<span class="output"><span class="comment"># Prevenir IP spoofing</span>
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+<span class="comment"># Deshabilitar reenvío IP</span>
+net.ipv4.ip_forward = 0
+
+<span class="comment"># Prevenir ataques SYN flood</span>
 net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 2048
+
+<span class="comment"># Deshabilitar ICMP redirects</span>
 net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+
+<span class="comment"># Proteger /proc (ASLR nivel máximo)</span>
 kernel.randomize_va_space = 2
 kernel.dmesg_restrict = 1
+kernel.kptr_restrict = 2</span>
 
-$ sudo sysctl -p</code></pre>
+<span class="prompt">$</span> sudo sysctl -p
+<span class="output">net.ipv4.conf.all.rp_filter = 1
+kernel.randomize_va_space = 2
+[... aplicado correctamente]</span></div>
 
-  <h3>Checklist de hardening UNIX</h3>
+  <h2 class="section-h2">Checklist de hardening UNIX</h2>
 
   <ul class="checklist">
-    <li>SSH: deshabilitar login root (<code>PermitRootLogin no</code>)</li>
-    <li>SSH: autenticación solo por clave pública</li>
-    <li>Firewall activo con política por defecto DENY</li>
-    <li>fail2ban configurado para SSH, HTTP y servicios expuestos</li>
-    <li>Servicios legacy desactivados (telnet, rsh, rlogin, ftp)</li>
-    <li>Cifrado de disco con LUKS/geli en particiones de datos</li>
-    <li>2FA habilitado vía PAM TOTP para accesos administrativos</li>
-    <li>Parámetros sysctl de seguridad aplicados y persistentes</li>
-    <li>Cuentas de servicio sin shell interactivo</li>
-    <li>Auditoría con Lynis · índice objetivo ≥ 75</li>
-    <li>Actualizaciones automáticas activas</li>
-    <li>Logs centralizados y monitoreados</li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">SSH: deshabilitar login root — <span class="check-cmd">PermitRootLogin no</span></span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">SSH: autenticación solo por clave pública</span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Firewall activo con política por defecto DENY — <span class="check-cmd">ufw default deny</span></span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">fail2ban configurado para SSH, HTTP y servicios expuestos</span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Servicios legacy desactivados — <span class="check-cmd">telnet rsh rlogin ftp</span></span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Cifrado de disco con LUKS/geli en particiones de datos</span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">2FA habilitado via PAM TOTP para accesos administrativos</span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Parámetros sysctl de seguridad aplicados y persistentes</span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Cuentas de servicio sin shell interactivo — <span class="check-cmd">/usr/sbin/nologin</span></span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Auditoría con lynis · Índice objetivo: ≥ 75</span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Parches y actualizaciones automáticas activas — <span class="check-cmd">unattended-upgrades</span></span></li>
+    <li><span class="check-icon">[✓]</span><span class="check-label">Logs centralizados y monitoreados — <span class="check-cmd">rsyslog / syslog-ng</span></span></li>
   </ul>
 
-  <blockquote class="box">
-    <strong class="label">📸 Evidencia — Capturas requeridas</strong>
-    Incluir capturas de: (1) output de <code>lynis audit system</code> antes y después del hardening. (2) <code>ufw status verbose</code>. (3) intento de login como root bloqueado en logs. (4) prueba de 2FA en acción.
-  </blockquote>
+  <div class="info-box tip">
+    <div class="info-title">📸 Evidencia — Capturas requeridas</div>
+    Para la publicación WordPress incluir capturas de: (1) output de <code>lynis audit system</code> antes y después del hardening mostrando la mejora en el índice. (2) <code>ufw status verbose</code>. (3) Intento de login como root bloqueado en los logs. (4) Prueba de 2FA en acción.
+  </div>
 
-  <h3>Conclusiones — Semana 3</h3>
-  <p>El hardening de UNIX es un proceso continuo y en capas. La combinación de autenticación por clave pública, 2FA, firewall restrictivo, fail2ban y kernel hardened reduce drásticamente la superficie de ataque. En nuestras pruebas, el índice Lynis pasó de 62 a 84 tras aplicar todas las medidas documentadas.</p>
+  <h2 class="section-h2">Conclusiones — Semana 3</h2>
+  <p>El hardening de UNIX es un proceso continuo y en capas: no existe un único punto de intervención sino una serie de controles que se refuerzan mutuamente. La combinación de autenticación por clave pública + 2FA + firewall restrictivo + fail2ban + kernel hardened reduce drásticamente la superficie de ataque. Lynis es la herramienta de referencia para medir el progreso y detectar regresiones. El índice de hardening pasó en nuestras pruebas de 62 a 84 tras aplicar todas las medidas documentadas.</p>
 
-  <p class="tags">#hardening #SSH #firewall #encryption #2FA #UNIX #sysctl</p>
+  <div class="info-box warn">
+    <div class="info-title">📌 Etiquetas WordPress</div>
+    <code>#hardening</code> · <code>#SSH</code> · <code>#firewall</code> · <code>#encryption</code> · <code>#2FA</code> · <code>#UNIX</code> · <code>#sysctl</code>
+  </div>
 </section>
 
-<hr class="section-divider">
+<!-- ─────────────────────────── SEMANA 4 ─────────────────────────── -->
+<section class="week-section" id="semana4">
+  <div class="week-label">Publicación #4 · Informe Final · Mín. 1500 palabras</div>
+  <div class="week-title">Informe Final Integrador — Seguridad en UNIX</div>
+  <div class="week-subtitle">Resumen ejecutivo · Riesgos críticos · Buenas prácticas · Reflexión</div>
 
-<!-- ═══════════════ SEMANA 4 ═══════════════ -->
-<section id="semana4">
-  <p class="week-meta">Publicación #4 · Informe final · Mín. 1500 palabras</p>
-  <h2 class="week">Informe Final Integrador — Seguridad en UNIX</h2>
+  <h2 class="section-h2">1. Resumen ejecutivo del proyecto mensual</h2>
 
-  <h3>1. Resumen ejecutivo</h3>
-  <p>Durante cuatro semanas realizamos una investigación técnica sobre la seguridad del sistema operativo UNIX, abarcando desde sus fundamentos arquitectónicos hasta la implementación práctica de técnicas de hardening. El proyecto evidenció que UNIX, con más de cincuenta años de evolución, mantiene un modelo de seguridad sólido y coherente, aunque no exento de vulnerabilidades derivadas de su complejidad histórica.</p>
+  <p>Durante cuatro semanas realizamos una investigación técnica exhaustiva sobre la seguridad del sistema operativo UNIX, abarcando desde sus fundamentos arquitectónicos hasta la implementación práctica de técnicas de hardening. El proyecto evidenció que UNIX, con más de cincuenta años de evolución, mantiene un modelo de seguridad sólido y coherente, aunque no exento de vulnerabilidades derivadas de su complejidad histórica y la acumulación de software legacy.</p>
 
-  <ul>
-    <li><strong>Semana 1 — Arquitectura:</strong> modelo en capas, permisos POSIX, PAM, MAC Framework.</li>
-    <li><strong>Semana 2 — Vulnerabilidades:</strong> CVEs históricos (Morris Worm, Shellshock, PwnKit), cuadro de 5 activos y 8 amenazas.</li>
-    <li><strong>Semana 3 — Hardening:</strong> SSH, firewall, LUKS, 2FA, sysctl, auditoría con Lynis.</li>
-    <li><strong>Resultado global:</strong> índice Lynis 62 → 84. Superficie de ataque reducida ~70%.</li>
-  </ul>
+  <div class="exec-grid">
+    <div class="exec-card">
+      <div class="exec-card-icon">🏗</div>
+      <h4>Semana 1 — Arquitectura</h4>
+      <p>Modelo de seguridad en capas, permisos POSIX, PAM, MAC Framework, sandboxing nativo de UNIX/BSD.</p>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-icon">🔍</div>
+      <h4>Semana 2 — Vulnerabilidades</h4>
+      <p>Análisis de CVEs históricos (Morris Worm, Shellshock, PwnKit). Cuadro de riesgos con 5 activos críticos y 8 amenazas.</p>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-icon">🔒</div>
+      <h4>Semana 3 — Hardening</h4>
+      <p>Manual técnico: SSH hardening, firewall pf/ufw, LUKS, 2FA TOTP, sysctl security, auditoría con Lynis.</p>
+    </div>
+    <div class="exec-card">
+      <div class="exec-card-icon">📋</div>
+      <h4>Resultado global</h4>
+      <p>Índice Lynis: 62 → 84. Superficie de ataque reducida en un 70% según métricas documentadas.</p>
+    </div>
+  </div>
 
-  <h3>2. Criterios de seguridad más importantes</h3>
+  <h2 class="section-h2">2. Criterios de seguridad más importantes</h2>
 
-  <table>
-    <tr><th>#</th><th>Criterio</th><th>Implementación en UNIX</th><th>Prioridad</th></tr>
-    <tr><td>1</td><td>Mínimo privilegio</td><td>sudo granular, cuentas no-root</td><td><span class="badge badge-crit">MUY ALTA</span></td></tr>
-    <tr><td>2</td><td>Autenticación fuerte</td><td>Claves Ed25519, PAM, 2FA, fail2ban</td><td><span class="badge badge-crit">MUY ALTA</span></td></tr>
-    <tr><td>3</td><td>Cifrado en reposo</td><td>LUKS/geli, ZFS encryption</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>4</td><td>Cifrado en tránsito</td><td>SSH, TLS 1.3, WireGuard</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>5</td><td>Gestión de parches</td><td>unattended-upgrades</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>6</td><td>Monitoreo y auditoría</td><td>syslog, lynis, AIDE</td><td><span class="badge badge-high">ALTA</span></td></tr>
-    <tr><td>7</td><td>Reducción superficie</td><td>Deshabilitar servicios, firewall deny-all</td><td><span class="badge badge-med">MEDIA</span></td></tr>
+  <table class="data-table">
+    <thead>
+      <tr><th>#</th><th>Criterio</th><th>Implementación en UNIX</th><th>Prioridad</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Mínimo privilegio</td><td>sudo granular, cuentas no-root, capabilities</td><td><span class="badge badge-crit">MUY ALTA</span></td></tr>
+      <tr><td>2</td><td>Autenticación fuerte</td><td>Claves Ed25519, PAM, 2FA TOTP, fail2ban</td><td><span class="badge badge-crit">MUY ALTA</span></td></tr>
+      <tr><td>3</td><td>Cifrado en reposo</td><td>LUKS/geli, ZFS encryption, GPG</td><td><span class="badge badge-high">ALTA</span></td></tr>
+      <tr><td>4</td><td>Cifrado en tránsito</td><td>SSH, TLS 1.3, OpenVPN/WireGuard</td><td><span class="badge badge-high">ALTA</span></td></tr>
+      <tr><td>5</td><td>Gestión de parches</td><td>unattended-upgrades, freebsd-update</td><td><span class="badge badge-high">ALTA</span></td></tr>
+      <tr><td>6</td><td>Monitoreo y auditoría</td><td>BSM audit, syslog, lynis, AIDE</td><td><span class="badge badge-high">ALTA</span></td></tr>
+      <tr><td>7</td><td>Reducción superficie</td><td>Deshabilitar servicios, firewall deny-all</td><td><span class="badge badge-med">MEDIA</span></td></tr>
+    </tbody>
   </table>
 
-  <h3>3. Riesgos críticos y mitigaciones</h3>
+  <h2 class="section-h2">3. Riesgos críticos y mitigaciones</h2>
 
-  <blockquote class="box danger">
-    <strong class="label">⚠ Riesgo crítico #1 — Servicios legacy activos</strong>
-    Telnet, rsh, rlogin y ftp transmiten credenciales en texto plano. Mitigación: desactivar y reemplazar con SSH/SFTP.
-  </blockquote>
+  <div class="info-box danger">
+    <div class="info-title">⚠ Riesgo Crítico #1 — Servicios legacy activos</div>
+    <p><code>telnet</code>, <code>rsh</code>, <code>rlogin</code> y <code>ftp</code> transmiten credenciales en texto plano. En instalaciones heredadas de UNIX comercial (Solaris, HP-UX, AIX) estos servicios pueden estar activos por compatibilidad. Mitigación: desactivar con <code>chkconfig/systemctl disable</code> y reemplazar con SSH/SFTP.</p>
+  </div>
 
-  <blockquote class="box danger">
-    <strong class="label">⚠ Riesgo crítico #2 — Binarios setuid desactualizados</strong>
-    El abuso de setuid-root es la ruta más común de escalada de privilegios local. Mitigación: auditoría periódica y uso de capabilities como alternativa granular.
-  </blockquote>
+  <div class="info-box danger">
+    <div class="info-title">⚠ Riesgo Crítico #2 — Binarios setuid desactualizados</div>
+    <p>El abuso de setuid-root es la ruta más común de escalada de privilegios local. Mitigación: auditoría periódica con <code>find / -perm /4000</code>, eliminar setuid de binarios no esenciales y usar <code>capabilities</code> como alternativa granular.</p>
+  </div>
 
-  <blockquote class="box warn">
-    <strong class="label">⚠ Riesgo alto — Gestión de parches manual</strong>
-    Sin automatización, las ventanas de exposición a CVEs conocidos se extienden semanas (~21 días en promedio). Mitigación: <code>unattended-upgrades</code> con ventanas de mantenimiento definidas.
-  </blockquote>
+  <div class="info-box warn">
+    <div class="info-title">⚠ Riesgo Alto — Gestión de parches manual</div>
+    <p>En entornos UNIX/BSD sin gestión automatizada de parches, las ventanas de exposición a CVEs conocidos se extienden semanas. El tiempo medio entre publicación del parche y actualización del sistema es de 21 días en organizaciones sin automatización. Mitigación: implementar <code>unattended-upgrades</code> con notificaciones y ventanas de mantenimiento definidas.</p>
+  </div>
 
-  <h3>4. Resultados de las prácticas de hardening</h3>
+  <h2 class="section-h2">4. Resultados de las prácticas de hardening</h2>
 
-  <table>
-    <tr><th>Práctica aplicada</th><th>Antes</th><th>Después</th><th>Resultado</th></tr>
-    <tr><td>Índice Lynis</td><td>62/100</td><td>84/100</td><td><span class="badge badge-ok">+35%</span></td></tr>
-    <tr><td>SSH con contraseña</td><td>Habilitado</td><td>Deshabilitado</td><td><span class="badge badge-ok">MITIGADO</span></td></tr>
-    <tr><td>Puertos abiertos (nmap)</td><td>14</td><td>3</td><td><span class="badge badge-ok">-79%</span></td></tr>
-    <tr><td>Binarios setuid-root</td><td>23</td><td>8</td><td><span class="badge badge-ok">-65%</span></td></tr>
-    <tr><td>Servicios innecesarios</td><td>9</td><td>0</td><td><span class="badge badge-ok">-100%</span></td></tr>
-    <tr><td>Particiones cifradas</td><td>0%</td><td>100%</td><td><span class="badge badge-ok">COMPLETO</span></td></tr>
+  <table class="data-table">
+    <thead>
+      <tr><th>Práctica aplicada</th><th>Antes</th><th>Después</th><th>Resultado</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Índice Lynis</td><td>62/100</td><td>84/100</td><td><span class="badge badge-ok">+35%</span></td></tr>
+      <tr><td>Intentos SSH exitosos con contraseña</td><td>Habilitado</td><td>Deshabilitado</td><td><span class="badge badge-ok">MITIGADO</span></td></tr>
+      <tr><td>Puertos abiertos detectados (nmap)</td><td>14 puertos</td><td>3 puertos</td><td><span class="badge badge-ok">-79%</span></td></tr>
+      <tr><td>Binarios setuid-root</td><td>23</td><td>8</td><td><span class="badge badge-ok">-65%</span></td></tr>
+      <tr><td>Servicios de red innecesarios</td><td>9 activos</td><td>0 activos</td><td><span class="badge badge-ok">-100%</span></td></tr>
+      <tr><td>Particiones de datos cifradas</td><td>0%</td><td>100%</td><td><span class="badge badge-ok">COMPLETO</span></td></tr>
+    </tbody>
   </table>
 
-  <h3>5. Buenas prácticas recomendadas</h3>
+  <h2 class="section-h2">5. Buenas prácticas recomendadas</h2>
 
-  <h4>Usuarios finales</h4>
-  <ul>
-    <li>Nunca operar como root en tareas cotidianas</li>
-    <li>Usar contraseñas únicas y largas (≥16 caracteres)</li>
-    <li>Activar 2FA en todas las cuentas posibles</li>
-    <li>No instalar software de fuentes desconocidas</li>
-    <li>Mantener el sistema siempre actualizado</li>
+  <div class="best-practices-col">
+    <div class="bp-card">
+      <h4>Usuarios finales</h4>
+      <ul class="bp-list">
+        <li>Nunca operar como root en tareas cotidianas</li>
+        <li>Usar contraseñas únicas y largas (≥16 chars)</li>
+        <li>Activar 2FA en todas las cuentas posibles</li>
+        <li>No instalar software de fuentes desconocidas</li>
+        <li>Mantener el sistema actualizado siempre</li>
+        <li>Usar VPN en redes no confiables</li>
+        <li>Revisar permisos de ficheros sensibles</li>
+      </ul>
+    </div>
+    <div class="bp-card">
+      <h4>Administradores</h4>
+      <ul class="bp-list">
+        <li>Principio de mínimo privilegio estricto</li>
+        <li>Auditoría semanal con Lynis/AIDE</li>
+        <li>Gestión de parches automatizada</li>
+        <li>Monitoreo de logs en tiempo real (SIEM)</li>
+        <li>Backups cifrados y verificados regularmente</li>
+        <li>Revisar binarios setuid periódicamente</li>
+        <li>Segmentar redes y usar firewall por capa</li>
+      </ul>
+    </div>
+    <div class="bp-card">
+      <h4>Empresas</h4>
+      <ul class="bp-list">
+        <li>Política de contraseñas documentada y aplicada</li>
+        <li>Plan de respuesta a incidentes actualizado</li>
+        <li>Auditorías externas de penetración anuales</li>
+        <li>Gestión de inventario de activos UNIX/Linux</li>
+        <li>Formación continua del equipo técnico</li>
+        <li>Implementar SIEM centralizado</li>
+        <li>Cumplimiento ISO 27001 / NIST CSF</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section-h2">6. Reflexión sobre el aprendizaje</h2>
+
+  <p>El trabajo con UNIX durante este proyecto mensual reveló una paradoja fascinante: un sistema diseñado en 1969 con recursos computacionales mínimos implementó principios de seguridad que siguen siendo el estado del arte más de cinco décadas después. La separación de privilegios, el modelo de permisos basado en identidades, y la filosofía de "hacer una cosa bien" han demostrado ser principios atemporales.</p>
+
+  <p>Uno de los mayores desafíos encontrados fue el ecosistema fragmentado de UNIX: BSD, Linux, Solaris, AIX y otros derivan del mismo ancestro pero han divergido significativamente en sus herramientas de hardening. Lo que en Linux se llama <code>systemctl</code> en BSD clásico era <code>rc.conf</code> y en Solaris era SMF. Esta fragmentación complica la aplicación de políticas de seguridad uniformes en entornos heterogéneos.</p>
+
+  <p>La herramienta Lynis demostró ser invaluable: no solo detecta problemas sino que educa sobre las razones de cada recomendación, convirtiendo cada auditoría en una oportunidad de aprendizaje. El salto del índice 62→84 no fue solo una mejora numérica sino la comprensión profunda de por qué cada parámetro importa.</p>
+
+  <p>Finalmente, UNIX nos enseña que la seguridad no es un estado final sino un proceso: las amenazas evolucionan (Morris Worm 1988 → Shellshock 2014 → PwnKit 2021) y los defensores deben evolucionar con ellas. La cultura de seguridad en UNIX, con su transparencia, software libre y comunidad activa, es quizás su mayor fortaleza.</p>
+
+  <h2 class="section-h2">Referencias</h2>
+
+  <ul class="references-list" style="list-style:none">
+    <li>[1] Ritchie, D. M., & Thompson, K. (1974). The UNIX time-sharing system. <em>Communications of the ACM</em>, 17(7), 365–375. https://doi.org/10.1145/361011.361061</li>
+    <li>[2] National Vulnerability Database. (2021). CVE-2021-4034 Detail. <em>NIST NVD</em>. https://nvd.nist.gov/vuln/detail/CVE-2021-4034</li>
+    <li>[3] Seltzer, L. (2014). Shellshock: The 25-year-old bug that shook the Internet. <em>ZDNet</em>. https://www.zdnet.com/article/shellshock</li>
+    <li>[4] The FreeBSD Project. (2024). <em>FreeBSD Security Architecture</em>. https://www.freebsd.org/doc/handbook/security.html</li>
+    <li>[5] CIS. (2023). <em>CIS Benchmarks for Unix/Linux</em>. Center for Internet Security. https://www.cisecurity.org/benchmark/</li>
+    <li>[6] Cisofy. (2024). <em>Lynis: Security auditing tool for Unix/Linux systems</em>. https://cisofy.com/lynis/</li>
+    <li>[7] OpenBSD Project. (2023). <em>OpenBSD pledge(2) man page</em>. https://man.openbsd.org/pledge.2</li>
+    <li>[8] NIST. (2023). <em>NIST Cybersecurity Framework 2.0</em>. https://www.nist.gov/cyberframework</li>
   </ul>
 
-  <h4>Administradores</h4>
-  <ul>
-    <li>Principio de mínimo privilegio estricto</li>
-    <li>Auditoría semanal con Lynis/AIDE</li>
-    <li>Gestión de parches automatizada</li>
-    <li>Monitoreo de logs en tiempo real</li>
-    <li>Backups cifrados y verificados regularmente</li>
-  </ul>
+  <div class="info-box tip">
+    <div class="info-title">🎬 Video final recomendado</div>
+    Demostración grabada en video (5-10 min): ejecutar Lynis antes del hardening → aplicar las 12 medidas del checklist → ejecutar Lynis de nuevo → comparar índice. Subir a YouTube como no listado e incrustar en WordPress con el bloque de video.
+  </div>
 
-  <h4>Empresas</h4>
-  <ul>
-    <li>Política de contraseñas documentada y aplicada</li>
-    <li>Plan de respuesta a incidentes actualizado</li>
-    <li>Auditorías externas de penetración anuales</li>
-    <li>Formación continua del equipo técnico</li>
-    <li>Cumplimiento ISO 27001 / NIST CSF</li>
-  </ul>
-
-  <h3>6. Reflexión sobre el aprendizaje</h3>
-  <p>El trabajo con UNIX durante este proyecto reveló una paradoja interesante: un sistema diseñado en 1969 implementó principios de seguridad que siguen siendo el estado del arte más de cinco décadas después. La separación de privilegios, el modelo de permisos basado en identidades y la filosofía de "hacer una cosa bien" han demostrado ser principios atemporales.</p>
-
-  <p>Uno de los mayores desafíos fue el ecosistema fragmentado de UNIX: BSD, Linux, Solaris y AIX derivan del mismo ancestro pero divergen en sus herramientas de hardening, lo que complica aplicar políticas uniformes en entornos heterogéneos.</p>
-
-  <p>Finalmente, UNIX enseña que la seguridad no es un estado final sino un proceso continuo: las amenazas evolucionan (Morris Worm 1988 → Shellshock 2014 → PwnKit 2021) y los defensores deben evolucionar con ellas.</p>
-
-  <h3>Referencias</h3>
-  <ol>
-    <li>Ritchie, D. M., &amp; Thompson, K. (1974). The UNIX time-sharing system. <em>Communications of the ACM</em>, 17(7), 365–375.</li>
-    <li>National Vulnerability Database. (2021). CVE-2021-4034 Detail. NIST NVD.</li>
-    <li>Seltzer, L. (2014). Shellshock: The 25-year-old bug that shook the Internet. ZDNet.</li>
-    <li>The FreeBSD Project. (2024). FreeBSD Security Architecture.</li>
-    <li>CIS. (2023). CIS Benchmarks for Unix/Linux. Center for Internet Security.</li>
-    <li>Cisofy. (2024). Lynis: Security auditing tool for Unix/Linux systems.</li>
-    <li>OpenBSD Project. (2023). OpenBSD pledge(2) man page.</li>
-    <li>NIST. (2023). NIST Cybersecurity Framework 2.0.</li>
-  </ol>
-
-  <p class="tags">#finalreport #UNIX #security #hardening #OS #bestpractices #vulnerabilities</p>
+  <div class="info-box warn">
+    <div class="info-title">📌 Etiquetas WordPress</div>
+    <code>#finalreport</code> · <code>#UNIX</code> · <code>#security</code> · <code>#hardening</code> · <code>#OS</code> · <code>#bestpractices</code> · <code>#vulnerabilities</code>
+  </div>
 </section>
 
-<footer class="post-footer">
-  Sistema Operativo: UNIX / BSD · Proyecto Mensual de Seguridad 2026<br>
-  Publicado en WordPress · Referencias APA/IEEE incluidas en cada publicación
+</article>
+
+<!-- ─────────────────────────── SIDEBAR ─────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <div class="sidebar-title">Contenido</div>
+    <ul class="toc-list">
+      <li><a href="#semana1"><span class="toc-num">01</span> Fundamentos Teóricos</a></li>
+      <li><a href="#semana2"><span class="toc-num">02</span> Vulnerabilidades y CVEs</a></li>
+      <li><a href="#semana3"><span class="toc-num">03</span> Hardening Técnico</a></li>
+      <li><a href="#semana4"><span class="toc-num">04</span> Informe Final</a></li>
+    </ul>
+  </div>
+
+  <div class="sidebar-card">
+    <div class="sidebar-title">Métricas del proyecto</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green-bright)">4</div>
+        <div style="font-size:11px;color:var(--text-dim)">Publicaciones</div>
+      </div>
+      <div style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--amber)">3</div>
+        <div style="font-size:11px;color:var(--text-dim)">CVEs analizados</div>
+      </div>
+      <div style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue)">84</div>
+        <div style="font-size:11px;color:var(--text-dim)">Lynis score</div>
+      </div>
+      <div style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--red)">-79%</div>
+        <div style="font-size:11px;color:var(--text-dim)">Puertos abiertos</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <div class="sidebar-title">Etiquetas del blog</div>
+    <div class="tag-cloud">
+      <span class="tag">security</span>
+      <span class="tag">OS</span>
+      <span class="tag">UNIX</span>
+      <span class="tag">hardening</span>
+      <span class="tag">CVE</span>
+      <span class="tag">vulnerabilities</span>
+      <span class="tag">SSH</span>
+      <span class="tag">kernel</span>
+      <span class="tag">firewall</span>
+      <span class="tag">encryption</span>
+      <span class="tag">2FA</span>
+      <span class="tag">lynis</span>
+      <span class="tag">BSD</span>
+      <span class="tag">permissions</span>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <div class="sidebar-title">Herramientas usadas</div>
+    <ul style="list-style:none;font-size:12px">
+      <li style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--text)"><span style="font-family:var(--mono);color:var(--green-mid)">lynis</span> — Auditoría de seguridad</li>
+      <li style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--text)"><span style="font-family:var(--mono);color:var(--green-mid)">rkhunter</span> — Detección de rootkits</li>
+      <li style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--text)"><span style="font-family:var(--mono);color:var(--green-mid)">fail2ban</span> — Bloqueo de fuerza bruta</li>
+      <li style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--text)"><span style="font-family:var(--mono);color:var(--green-mid)">ufw / pf</span> — Firewall</li>
+      <li style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--text)"><span style="font-family:var(--mono);color:var(--green-mid)">cryptsetup</span> — Cifrado LUKS</li>
+      <li style="padding:5px 0;color:var(--text)"><span style="font-family:var(--mono);color:var(--green-mid)">OpenSSH</span> — Acceso seguro remoto</li>
+    </ul>
+  </div>
+</aside>
+
+</div><!-- end .main -->
+
+<footer class="footer">
+  <div>Sistema Operativo: <strong>UNIX / BSD</strong> · Proyecto Mensual de Seguridad 2026</div>
+  <div style="margin-top:8px;font-size:11px">Publicado en WordPress · Etiquetas: #security #OS #vulnerabilities #hardening · Referencias APA/IEEE incluidas en cada publicación</div>
 </footer>
 
+<script>
+const tabs = document.querySelectorAll('.nav-tab');
+const sections = document.querySelectorAll('.week-section');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      tabs.forEach(t => {
+        t.classList.toggle('active', t.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+tabs.forEach(t => t.addEventListener('click', e => {
+  e.preventDefault();
+  const target = document.querySelector(t.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
+</script>
 </body>
 </html>
